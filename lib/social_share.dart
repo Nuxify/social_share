@@ -173,8 +173,25 @@ class SocialShare {
       }
     }
     args = <String, dynamic>{"image": _imagePath, "content": contentText};
-    final bool? version = await _channel.invokeMethod('shareOptions', args);
-    return version;
+    await _channel.invokeMethod('shareOptions', args);
+    return true;
+  }
+
+  static Future<bool?> shareLinkedin(String contentText,
+      {String? imagePath}) async {
+    Map<String, dynamic> args;
+
+    var _imagePath = imagePath;
+    if (Platform.isAndroid) {
+      if (imagePath != null) {
+        var stickerFilename = "stickerAsset.png";
+        await reSaveImage(imagePath, stickerFilename);
+        _imagePath = stickerFilename;
+      }
+    }
+    args = <String, dynamic>{"image": _imagePath, "content": contentText};
+    await _channel.invokeMethod('shareLinkedIn', args);
+    return true;
   }
 
   static Future<String?> shareWhatsapp(String content) async {
