@@ -138,6 +138,41 @@ class SocialSharePlugin:FlutterPlugin, MethodCallHandler, ActivityAware {
             activeContext!!.startActivity(chooserIntent)
             result.success("success")
 
+        } else if(call.method =="shareLinkedIn"){
+
+            val content: String? = call.argument("content")
+            val image: String? = call.argument("image")
+            val intent = Intent(Intent.ACTION_SEND)
+        
+            if (image != null) {
+                val imageFile = File(activeContext!!.cacheDir, image)
+                val imageFileUri = FileProvider.getUriForFile(
+                    activeContext!!,
+                    activeContext!!.applicationContext.packageName + ".com.shekarmudaliyar.social_share",
+                    imageFile
+                )
+                intent.type = "image/*"
+                intent.putExtra(Intent.EXTRA_STREAM, imageFileUri)
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } else {
+                intent.type = "text/plain"
+            }
+        
+            intent.putExtra(Intent.EXTRA_TEXT, content)
+        
+            // Set package to LinkedIn only
+            intent.`package` = "com.linkedin.android"
+        
+            // Verify LinkedIn is installed
+            val packageManager = activeContext!!.packageManager
+            if (intent.resolveActivity(packageManager) != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                activeContext!!.startActivity(intent)
+                result.success("success")
+            } else {
+                result.error("UNAVAILABLE", "LinkedIn app is not installed", null)
+            }
+
         } else if (call.method == "copyToClipboard") {
 
             //copies content onto the clipboard

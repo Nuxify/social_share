@@ -246,6 +246,38 @@
             [controller presentViewController:activityVC animated:YES completion:nil];
             result([NSNumber numberWithBool:YES]);
         }
+    } 
+    else if ([@"shareLinkedIn" isEqualToString:call.method]) {
+        NSString *content = call.arguments[@"content"];
+        BOOL isOpenBrowser = YES; // You can make this dynamic via args if needed
+
+        if (content != nil && [content isKindOfClass:[NSString class]] && content.length > 0) {
+            NSString *encodedContent = [content stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+
+            NSString *appUrlString = [NSString stringWithFormat:@"linkedin://shareArticle?mini=true&url=%@", encodedContent];
+            NSString *webUrlString = [NSString stringWithFormat:@"https://www.linkedin.com/sharing/share-offsite/?url=%@", encodedContent];
+
+            NSURL *appUrl = [NSURL URLWithString:appUrlString];
+            NSURL *webUrl = [NSURL URLWithString:webUrlString];
+
+            UIApplication *application = [UIApplication sharedApplication];
+
+            if ([application canOpenURL:appUrl]) {
+                [application openURL:appUrl options:@{} completionHandler:nil];
+                result([NSNumber numberWithBool:YES]);
+            } else if (isOpenBrowser && webUrl != nil) {
+                [application openURL:webUrl options:@{} completionHandler:nil];
+                result([NSNumber numberWithBool:YES]);
+            } else {
+                result([FlutterError errorWithCode:@"LINKEDIN_NOT_AVAILABLE"
+                                        message:@"LinkedIn app not installed and browser fallback not allowed"
+                                        details:nil]);
+            }
+        } else {
+            result([FlutterError errorWithCode:@"INVALID_ARGUMENT"
+                                    message:@"Missing or invalid 'content' URL"
+                                    details:nil]);
+        }
     } else if ([@"checkInstalledApps" isEqualToString:call.method]) {
         NSMutableDictionary *installedApps = [[NSMutableDictionary alloc] init];
         if ([[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"instagram-stories://"]]) {
