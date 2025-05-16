@@ -4,6 +4,15 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
+class PlatformInstallationError implements Exception {
+  final String message;
+  final String platform;
+  PlatformInstallationError({required this.message, required this.platform});
+
+  @override
+  String toString() => 'PlatformInstallationError: $message';
+}
+
 class SocialShare {
   static const MethodChannel _channel = const MethodChannel('social_share');
 
@@ -86,6 +95,12 @@ class SocialShare {
     }
 
     final String? response = await _channel.invokeMethod(platform, args);
+
+    if (response == 'error') {
+      throw PlatformInstallationError(
+          message: 'app_not_installed', platform: platform);
+    }
+
     return response;
   }
 
